@@ -1,0 +1,52 @@
+- hosts: servers
+  handlers:
+    - name: Restart zabbix-agent
+      service:
+        name: zabbix-agent
+        state: restarted
+      become: yes
+
+  tasks:
+    - name: zabbix-repo
+      apt:
+        deb: http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+xenial_all.deb
+      become: yes
+
+    - name: install agent
+      apt:
+        name: zabbix-agent
+        update_cache: yes
+      become: yes
+
+    - name: create scripts dir
+      file:
+        path: /etc/zabbix/scripts
+        state: directory
+        mode: 0755
+      become: yes
+      notify: Restart zabbix-agent
+
+    - name: generate script for ssl_ckeck
+      template:
+        src: ssl_expire_check.sh.j2
+        dest: /etc/zabbix/scripts/ssl_expire_check.sh
+        mode: 0755
+      become: yes
+      notify: Restart zabbix-agent
+
+    - name: generate script for domain_ckeck
+      template:
+        src: domain_expire_check.sh.j2
+        dest: /etc/zabbix/scripts/domain_expire_check.sh
+        mode: 0755
+      become: yes
+      notify: Restart zabbix-agent
+
+    - name: generate zabbix-agent config
+      template:
+        src: zabbix_agentd.conf.j2
+        dest: /etc/zabbix/zabbix_agentd.conf
+        mode: 0755
+        backup: yes
+      become: yes
+      notify: Restart zabbix-agent
