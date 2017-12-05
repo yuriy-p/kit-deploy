@@ -1,0 +1,24 @@
+- hosts: servers
+
+  tasks:
+
+  - name: dependencies
+    apt:
+      name: "{{ item }}"
+    with_items:
+      - libc-ares2
+      - libc6
+      - libcrypto++9v5
+      - libgcc1
+      - libpcre3
+      - libpcrecpp0v5
+      - libssl1.0.0
+      - libstdc++6
+      - zlib1g
+      - apt-transport-https
+    become: yes
+
+  - name: install mega.nz cli
+    apt:
+      deb: https://mega.nz/linux/MEGAsync/xUbuntu_16.04/amd64/megacmd-xUbuntu_16.04_amd64.deb
+    become: yes
