@@ -1,14 +1,18 @@
 - hosts: servers
 
   tasks:
+  - name: check mega login
+    fail:
+      msg: mega login is not defined
+    when: "mega_login is not defined"
 
-  - name: dependencies
+  - name: dependencies for 16.04
     apt:
       name: "{{ item }}"
     with_items:
       - libc-ares2
       - libc6
-      - libcrypto++9v5
+      - libcrypto++95
       - libgcc1
       - libpcre3
       - libpcrecpp0v5
@@ -17,8 +21,56 @@
       - zlib1g
       - apt-transport-https
     become: yes
+    when: ansible_distribution_version == '16.04' and mega_login is defined
+
+  - name: dependencies for 14.04
+    apt:
+      name: "{{ item }}"
+    with_items:
+      - libc-ares2
+      - libc6
+      - libcrypto++9
+      - libgcc1
+      - libpcre3
+      - libpcrecpp0
+      - libssl1.0.0
+      - libstdc++6
+      - zlib1g
+      - apt-transport-https
+    become: yes
+    when: ansible_distribution_version == '14.04'
 
   - name: install mega.nz cli
     apt:
-      deb: https://mega.nz/linux/MEGAsync/xUbuntu_16.04/amd64/megacmd-xUbuntu_16.04_amd64.deb
+      deb: "https://mega.nz/linux/MEGAsync/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/amd64/megacmd-x{{ ansible_distribution }}_{{ ansible_distribution_version }}_amd64.deb"
     become: yes
+
+  - name: create credentials file
+    copy:
+      content: |
+        LOGIN='{{ mega_login }}'
+        PASSWORD='{{ mega_password }}'
+      dest: /root/.mega_credentials
+      mode: 0600
+    become: yes
+    become_user: root
+
+  - name: create backup script
+    template:
+      src: backup2mega.sh.j2
+      dest: /opt/backup2mega.sh
+      mode: 0700
+    become: yes
+    become_user: root
+
+  - name: cron string
+    cron:
+      name: "backup to mega.nz"
+      minute: "0"
+      hour: "2,14"
+#      job: ". /root/.mega-credentials; echo $(date) >> /var/log/motiw2mega.log; /usr/bin/mega-login $LOGIN $PASSWORD &>/dev/null; /usr/bin/mega-put -c /var/Motiw/backup /Motiw/ >> /var/log/motiw2mega.log"
+      job: "/opt/backup2mega.sh {{ ansible_host }}/backup >> /var/log/motiw2mega.log"
+    become: yes
+    become_user: root
+
+
