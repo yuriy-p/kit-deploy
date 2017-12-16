@@ -12,7 +12,7 @@
     with_items:
       - libc-ares2
       - libc6
-      - libcrypto++95
+      - libcrypto++9v5
       - libgcc1
       - libpcre3
       - libpcrecpp0v5
@@ -68,7 +68,6 @@
       name: "backup to mega.nz"
       minute: "0"
       hour: "2,14"
-#      job: ". /root/.mega-credentials; echo $(date) >> /var/log/motiw2mega.log; /usr/bin/mega-login $LOGIN $PASSWORD &>/dev/null; /usr/bin/mega-put -c /var/Motiw/backup /Motiw/ >> /var/log/motiw2mega.log"
       job: "/opt/backup2mega.sh {{ ansible_host }}/backup >> /var/log/motiw2mega.log"
     become: yes
     become_user: root
