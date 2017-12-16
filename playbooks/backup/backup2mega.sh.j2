@@ -1,0 +1,29 @@
+#!/bin/bash
+
+PREF=$(date +%Y-%m-%d-%H-%M)
+PREF_SHORT=$(date +%Y-%m-%d)
+SAVE_PERIOD="60d"
+REMOTE_BASE_PATH=$1
+
+. /root/.mega-credentials
+LOGIN_RES=$(/usr/bin/mega-login $LOGIN $PASSWORD 2>&1)
+RC=$?
+if [ $RC -ne 0 ] && [ $RC -ne 202 ]; then
+	echo $LOGIN_RES
+fi
+
+/bin/echo "$(date "+%Y-%m-%d %H:%M") | rotate old files"
+ROTATE_RES=$(/usr/bin/mega-find $REMOTE_BASE_PATH --mtime="+$SAVE_PERIOD"|/bin/grep -v "20[0-9]\{2\}-[0-9]\{2\}-01"|/usr/bin/xargs /usr/bin/mega-rm 2>&1)
+RC=$?
+if [ $RC -ne 0 ] && [ $RC -ne 123 ]; then
+	echo $ROTATE_RES
+fi
+/bin/echo "$(date "+%Y-%m-%d %H:%M") | backup Motiw"
+/usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/Motiw > /dev/null
+/usr/bin/mega-put -c /var/Motiw/backup $REMOTE_BASE_PATH/Motiw/
+
+/bin/echo "$(date "+%Y-%m-%d %H:%M") | backup /etc"
+/bin/tar -czf /tmp/etc-$PREF_SHORT.tgz -C /etc/ .
+/usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/system > /dev/null
+/usr/bin/mega-put -c /tmp/etc-$PREF_SHORT.tgz $REMOTE_BASE_PATH/system
+/bin/rm -f /tmp/etc-$PREF_SHORT.tgz
