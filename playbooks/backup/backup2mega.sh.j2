@@ -2,10 +2,10 @@
 
 PREF=$(date +%Y-%m-%d-%H-%M)
 PREF_SHORT=$(date +%Y-%m-%d)
-SAVE_PERIOD="60d"
+SAVE_PERIOD={{ save_period | default("60d") }}
 REMOTE_BASE_PATH=$1
 
-. /root/.mega-credentials
+. /root/.mega_credentials
 LOGIN_RES=$(/usr/bin/mega-login $LOGIN $PASSWORD 2>&1)
 RC=$?
 if [ $RC -ne 0 ] && [ $RC -ne 202 ]; then
@@ -18,12 +18,17 @@ RC=$?
 if [ $RC -ne 0 ] && [ $RC -ne 123 ]; then
 	echo $ROTATE_RES
 fi
-/bin/echo "$(date "+%Y-%m-%d %H:%M") | backup Motiw"
-/usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/Motiw > /dev/null
-/usr/bin/mega-put -c /var/Motiw/backup $REMOTE_BASE_PATH/Motiw/
 
+#system configs backup
 /bin/echo "$(date "+%Y-%m-%d %H:%M") | backup /etc"
 /bin/tar -czf /tmp/etc-$PREF_SHORT.tgz -C /etc/ .
 /usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/system > /dev/null
 /usr/bin/mega-put -c /tmp/etc-$PREF_SHORT.tgz $REMOTE_BASE_PATH/system
 /bin/rm -f /tmp/etc-$PREF_SHORT.tgz
+
+{% for data2backup in backup2mega %}
+#backup {{ data2backup.name }}
+/bin/echo "$(date "+%Y-%m-%d %H:%M") | backup {{ data2backup.name }}"
+/usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/Motiw > /dev/null
+/usr/bin/mega-put -c {{ data2backup.path }} $REMOTE_BASE_PATH/{{ data2backup.name }}/
+{% endfor %}
