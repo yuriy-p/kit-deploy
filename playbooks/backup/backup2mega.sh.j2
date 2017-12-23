@@ -29,6 +29,6 @@ fi
 {% for data2backup in backup2mega %}
 #backup {{ data2backup.name }}
 /bin/echo "$(date "+%Y-%m-%d %H:%M") | backup {{ data2backup.name }}"
-/usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/Motiw > /dev/null
+/usr/bin/mega-mkdir -p $REMOTE_BASE_PATH/{{ data2backup.name }}/ > /dev/null
 /usr/bin/mega-put -c {{ data2backup.path }} $REMOTE_BASE_PATH/{{ data2backup.name }}/
 {% endfor %}
