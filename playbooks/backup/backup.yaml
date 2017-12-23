@@ -68,7 +68,7 @@
       name: "backup to mega.nz"
       minute: "0"
       hour: "2,14"
-      job: "/opt/backup2mega.sh {{ ansible_host }}/backup >> /var/log/motiw2mega.log"
+      job: "/opt/backup2mega.sh {{ ansible_host }}/backup >> /var/log/backup2mega.log"
     become: yes
     become_user: root
 
