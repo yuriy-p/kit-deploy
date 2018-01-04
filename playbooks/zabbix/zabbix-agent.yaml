@@ -12,11 +12,14 @@
         deb: http://repo.zabbix.com/zabbix/3.4/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.4-1+xenial_all.deb
       become: yes
 
-    - name: install agent
+    - name: install agent and dependencies
       apt:
-        name: zabbix-agent
+        name: "{{ item }}"
         update_cache: yes
       become: yes
+      with_items:
+        - zabbix-agent
+        - whois
 
     - name: create scripts dir
       file:
