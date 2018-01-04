@@ -42,6 +42,14 @@
       become: yes
       notify: Restart zabbix-agent
 
+    - name: allow sudo for zabbix user to start mega-du
+      lineinfile:
+        path: /etc/sudoers
+        line: zabbix      ALL=(ALL:ALL) NOPASSWD:/usr/bin/mega-du
+        regexp: '^zabbix.*mega-du$'
+        validate: '/usr/sbin/visudo -cf %s'
+      become: yes
+
     - name: generate zabbix-agent config
       template:
         src: zabbix_agentd.conf.j2
